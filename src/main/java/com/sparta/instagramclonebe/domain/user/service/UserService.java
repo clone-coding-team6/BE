@@ -1,5 +1,6 @@
 package com.sparta.instagramclonebe.domain.user.service;
 
+import com.sparta.instagramclonebe.domain.user.dto.LoginRequestDto;
 import com.sparta.instagramclonebe.domain.user.dto.SignupRequestDto;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.domain.user.entity.UserRoleEnum;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @Service
@@ -50,4 +52,25 @@ public class UserService {
         return ResponseUtils.ok();
 
     }
+
+    @Transactional(readOnly = true)
+    public SuccessResponseDto<Void> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
+        String username = loginRequestDto.getUsername();
+        String password = loginRequestDto.getPassword();
+
+        //사용자 확인
+        if (userRepository.findByUsername(username).isEmpty()) {
+            throw new IllegalArgumentException("등록된 사용자가 없습니다.");
+        }
+
+        //비밀번호 중복 확인
+        User user = userRepository.findByUsername(username).get();
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername(), user.getRole()));
+        return ResponseUtils.ok();
+    }
+
 }

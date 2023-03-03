@@ -20,25 +20,29 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String content;
 
+    @Column
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "USER_ID", nullable = false)
     private User user;
 
     @Builder
-    private Post(PostRequestDto postRequestDto, User user) {
-        this.content = postRequestDto.getContent();
+    private Post(PostRequestDto postDto, User user) {
+        this.content = postDto.getContent();
+        this.imageUrl = postDto.getImageUrl();
         this.user = user;
     }
 
-    public static Post of(PostRequestDto postRequestDto, User user) {
+    public static Post of(PostRequestDto postDto, User user) {
         return Post.builder()
-                .postRequestDto(postRequestDto)
+                .postDto(postDto)
                 .user(user)
                 .build();
     }
 
-    public void update(PostRequestDto postRequestDto) {
-        this.content = postRequestDto.getContent();
+    public void update(PostRequestDto postDto) {
+        this.content = postDto.getContent();
     }
 
 }

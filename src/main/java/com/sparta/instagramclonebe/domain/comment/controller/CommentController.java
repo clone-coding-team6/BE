@@ -18,8 +18,8 @@ public class CommentController {
     private final CommentService commentService;
 
     //create
-    @PostMapping("/postnumber/{postId}")
-    public ResponseEntity<CommentResponseDto> createComment(@PathVariable Long postId, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    @PostMapping("/")
+    public ResponseEntity<CommentResponseDto> createComment(@RequestParam(value = "postId") Long postId, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.createComment(postId, commentRequestDto, userDetails.getUser());
     }
 
@@ -29,8 +29,8 @@ public class CommentController {
 //        return commentService.updateComment(commentId, commentRequestDto, userDetails.getUser());
 //    }
     //delete
-    @DeleteMapping("/commentnumber/{commentId}")
-    public ResponseEntity<StatusResponseDto> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return commentService.deleteComment(commentId, userDetails.getUser());
+    @DeleteMapping("/{id}")
+    public ResponseEntity<StatusResponseDto> deleteComment(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return commentService.deleteComment(id, userDetails.getUser());
     }
 }

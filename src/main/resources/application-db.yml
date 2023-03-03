@@ -1,0 +1,64 @@
+## Local 과 Dev 환경에서 공통적으로 작성.
+spring:
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.batch_size: 100
+        default_fetch_size: 100
+        order_inserts: true
+        order_updates: true
+      jakarta:
+        persistence:
+          sharedCache.mode: ALL
+---
+## Local 에서만 적용할 설정들.
+spring:
+  config:
+    activate:
+      on-profile: "db-local"
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    show-sql: true
+    database: H2
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  datasource:
+    url: jdbc:h2:mem:board
+    username: sa
+    password:
+---
+spring:
+  config:
+    activate:
+      on-profile: "db-dev"
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: true
+    database: MYSQL
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: // URL
+      username: admin
+      password: 12345678
+      max-lifetime: 60000
+      connection-timeout: 3000
+      maximum-pool-size: 10

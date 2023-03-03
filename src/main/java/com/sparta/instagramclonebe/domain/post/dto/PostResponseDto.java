@@ -1,29 +1,26 @@
 package com.sparta.instagramclonebe.domain.post.dto;
 
-
 import com.sparta.instagramclonebe.domain.post.entity.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Size;
-
 @Getter
 @NoArgsConstructor
-public class PostRequestDto {
+public class PostResponseDto {
 
-    @Size(min = 1, max = 3000, message = "게시글 내용은 1글자 이상 3000자 이하로만 작성할 수 있습니다.")
+    private Long postId;
     private String content;
     private String imageUrl;
 
     @Builder
-    private PostRequestDto(Post post){
+    private PostResponseDto(Post post){
+        this.postId = post.getId();
         this.content = post.getContent();
         this.imageUrl = post.getImageUrl();
     }
-
-    public static PostRequestDto of(Post post){
-        return PostRequestDto.builder()
+    public static PostResponseDto of(Post post){
+        return PostResponseDto.builder()
                 .post(post)
                 .build();
     }

@@ -1,6 +1,10 @@
 package com.sparta.instagramclonebe.domain.post.service;
 
 
+import com.sparta.instagramclonebe.domain.like.entity.CommentLike;
+import com.sparta.instagramclonebe.domain.like.entity.PostLike;
+import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
+import com.sparta.instagramclonebe.domain.like.repository.PostLikeRepository;
 import com.sparta.instagramclonebe.domain.post.dto.PostRequestDto;
 import com.sparta.instagramclonebe.domain.post.dto.PostResponseDto;
 import com.sparta.instagramclonebe.domain.post.entity.Post;
@@ -23,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     //게시글 작성
     @Transactional
@@ -38,7 +44,7 @@ public class PostService {
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
         for (Post post : postList) {
-            responseDtoList.add(PostResponseDto.of(post));
+            responseDtoList.add(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId())));
         }
         return new ResponseEntity<>(ResponseUtils.ok(responseDtoList), HttpStatus.OK);
     }
@@ -47,7 +53,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public ResponseEntity<GlobalResponseDto<PostResponseDto>> getPost(Long id) {
         Post post = getPostById(id);
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post)), HttpStatus.OK);
+        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()))), HttpStatus.OK);
     }
 
 //    // 내가 쓴 리뷰 조회
@@ -81,7 +87,7 @@ public class PostService {
         }
         post.update(requestDto);
         postRepository.flush();
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post)), HttpStatus.OK);
+        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()))), HttpStatus.OK);
     }
 
     //게시글 삭제

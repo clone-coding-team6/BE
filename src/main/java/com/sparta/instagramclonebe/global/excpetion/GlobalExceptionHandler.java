@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -54,12 +55,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<List<ObjectError>> handleMethodException(MethodArgumentNotValidException ex){
+    public ResponseEntity<List<String>> handleMethodException(MethodArgumentNotValidException ex){
         BindingResult bindingResult = ex.getBindingResult();
         List<ObjectError> allErrors = bindingResult.getAllErrors();
+        List<String> allMessages = new ArrayList<>();
         for (ObjectError error : allErrors) {
-            log.error("Error : " + error);
+            log.error(error.getDefaultMessage());
+            allMessages.add(error.getDefaultMessage());
         }
-        return new ResponseEntity<>(allErrors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(allMessages, HttpStatus.BAD_REQUEST);
     }
 }

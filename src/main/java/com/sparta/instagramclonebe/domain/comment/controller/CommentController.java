@@ -12,19 +12,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/comment")
+@RequestMapping("/api")
 public class CommentController {
 
     private final CommentService commentService;
 
     //create
-    @PostMapping("/")
+    @PostMapping("/comment")
     public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(@RequestParam(value = "postId") Long postId, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.createComment(postId, commentRequestDto, userDetails.getUser());
     }
 
     //delete
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/comment/{id}")
     public ResponseEntity<GlobalResponseDto<Void>> deleteComment(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.deleteComment(id, userDetails.getUser());
     }

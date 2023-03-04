@@ -1,8 +1,9 @@
 package com.sparta.instagramclonebe.domain.post.service;
 
 
-import com.sparta.instagramclonebe.domain.like.entity.CommentLike;
-import com.sparta.instagramclonebe.domain.like.entity.PostLike;
+import com.sparta.instagramclonebe.domain.comment.dto.CommentResponseDto;
+import com.sparta.instagramclonebe.domain.comment.entity.Comment;
+import com.sparta.instagramclonebe.domain.comment.repository.CommentRepository;
 import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
 import com.sparta.instagramclonebe.domain.like.repository.PostLikeRepository;
 import com.sparta.instagramclonebe.domain.post.dto.PostRequestDto;
@@ -29,6 +30,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final CommentRepository commentRepository;
 
     //게시글 작성
     @Transactional
@@ -43,8 +45,9 @@ public class PostService {
     public ResponseEntity<GlobalResponseDto<List<PostResponseDto>>> getPosts() {
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
-        for (Post post : postList) {
-            responseDtoList.add(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId())));
+        for (Post post : postList){
+            List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+            responseDtoList.add(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList));
         }
         return new ResponseEntity<>(ResponseUtils.ok(responseDtoList), HttpStatus.OK);
     }
@@ -53,7 +56,50 @@ public class PostService {
     @Transactional(readOnly = true)
     public ResponseEntity<GlobalResponseDto<PostResponseDto>> getPost(Long id) {
         Post post = getPostById(id);
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()))), HttpStatus.OK);
+        List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
+                .of(post,postLikeRepository.countPostLikeByPostId(post.getId()),commentResponseDtoList)), HttpStatus.OK);
+    }
+
+    //게시글 수정
+    @Transactional
+    public ResponseEntity<GlobalResponseDto<PostResponseDto>> update(Long id, PostRequestDto requestDto, User user) {
+        Post post = getPostById(id);
+        if(!post.getUser().equals(user)){
+            throw new PostException(ErrorCode.POST_UPDATE_FAILED);
+        }
+        post.update(requestDto);
+        postRepository.flush();
+        List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
+                .of(post,postLikeRepository.countPostLikeByPostId(post.getId()),commentResponseDtoList)), HttpStatus.OK);
+    }
+
+    //게시글 삭제
+    @Transactional
+    public ResponseEntity<GlobalResponseDto<Void>> deletePost(Long id, User user) {
+        Post post = getPostById(id);
+        if(!post.getUser().equals(user)){
+            throw new PostException(ErrorCode.POST_DELETE_FAILED);
+        }
+        postRepository.deleteById(post.getId());
+        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
+    }
+
+    private List<CommentResponseDto> getCommentResponseDtoList(Post post) {
+        List<Comment> commentList = commentRepository.findAllByPost(post);
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+        for(Comment comment : commentList){
+            Long commentLikeCount = commentLikeRepository.countByComment(comment);
+            commentResponseDtoList.add(CommentResponseDto.of(comment, commentLikeCount));
+        }
+        return commentResponseDtoList;
+    }
+
+    private Post getPostById(Long id) {
+        return postRepository.findById(id).orElseThrow(
+                () -> new PostException(ErrorCode.POST_NOT_FOUND)
+        );
     }
 
 //    // 내가 쓴 리뷰 조회
@@ -77,33 +123,4 @@ public class PostService {
 //
 //        return ResponseUtils.ok(page.getContent());
 //    }
-
-    //게시글 수정
-    @Transactional
-    public ResponseEntity<GlobalResponseDto<PostResponseDto>> update(Long id, PostRequestDto requestDto, User user) {
-        Post post = getPostById(id);
-        if(!post.getUser().equals(user)){
-            throw new PostException(ErrorCode.POST_UPDATE_FAILED);
-        }
-        post.update(requestDto);
-        postRepository.flush();
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()))), HttpStatus.OK);
-    }
-
-    //게시글 삭제
-    @Transactional
-    public ResponseEntity<GlobalResponseDto<Void>> deletePost(Long id, User user) {
-        Post post = getPostById(id);
-        if(!post.getUser().equals(user)){
-            throw new PostException(ErrorCode.POST_DELETE_FAILED);
-        }
-        postRepository.deleteById(post.getId());
-        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
-    }
-
-    private Post getPostById(Long id) {
-        return postRepository.findById(id).orElseThrow(
-                () -> new PostException(ErrorCode.POST_NOT_FOUND)
-        );
-    }
 }

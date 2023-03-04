@@ -27,12 +27,12 @@ public class UserService {
 
     @Transactional
     public SuccessResponseDto<Void> signup(SignupRequestDto signupRequestDto) { // 회원 가입
-        String username = signupRequestDto.getUsername();
+        String useremail = signupRequestDto.getUseremail();
         String password = passwordEncoder.encode(signupRequestDto.getPassword()); // 비밀번호 암호화
         String nickname = signupRequestDto.getNickname();
 
         //회원 중복 확인
-        Optional<User> found = userRepository.findByUsername(username);
+        Optional<User> found = userRepository.findByUseremail(useremail);
         if (found.isPresent()) {
             throw new IllegalArgumentException("중복된 아이디 입니다.");
         }
@@ -47,7 +47,7 @@ public class UserService {
         UserRoleEnum role = UserRoleEnum.USER;
 
 
-        User user = User.of(username, password, role, nickname);
+        User user = User.of(useremail, password, role, nickname);
         userRepository.save(user);
         return ResponseUtils.ok();
 
@@ -55,21 +55,21 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public SuccessResponseDto<Void> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
-        String username = loginRequestDto.getUsername();
+        String useremail = loginRequestDto.getUseremail();
         String password = loginRequestDto.getPassword();
 
         //사용자 확인
-        if (userRepository.findByUsername(username).isEmpty()) {
+        if (userRepository.findByUseremail(useremail).isEmpty()) {
             throw new IllegalArgumentException("등록된 사용자가 없습니다.");
         }
 
         //비밀번호 중복 확인
-        User user = userRepository.findByUsername(username).get();
+        User user = userRepository.findByUseremail(useremail).get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername(), user.getRole()));
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUseremail(), user.getRole()));
         return ResponseUtils.ok();
     }
 

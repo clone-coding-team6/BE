@@ -3,6 +3,7 @@ package com.sparta.instagramclonebe.domain.image.entity;
 import com.sparta.instagramclonebe.domain.image.dto.ImageFileRequestDto;
 import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.global.util.Timestamped;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Image extends Timestamped {
 
     @Id

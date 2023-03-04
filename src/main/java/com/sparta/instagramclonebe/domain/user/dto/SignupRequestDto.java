@@ -11,7 +11,7 @@ public class SignupRequestDto {
 
     @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")
-    private String useremail;
+    private String userEmail;
 
     @NotBlank
     @Pattern(regexp = "^[a-zA-Z0-9~!@#$%^&*()_+=?,./<>{}\\[\\]\\-]{8,15}$", message = "비밀번호는 8~15자리 영문 대소문자(a~z, A~Z), 숫자(0~9), 특수문자를 사용하세요.")

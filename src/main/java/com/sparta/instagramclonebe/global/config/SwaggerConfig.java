@@ -3,7 +3,7 @@ package com.sparta.instagramclonebe.global.config;
 import com.fasterxml.classmate.TypeResolver;
 import com.sparta.instagramclonebe.domain.comment.dto.CommentResponseDto;
 import com.sparta.instagramclonebe.domain.post.dto.PostResponseDto;
-import com.sparta.instagramclonebe.global.dto.StatusResponseDto;
+import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -30,7 +30,7 @@ public class SwaggerConfig {
                 .securitySchemes(Arrays.asList(apiKey())) // 추가
                 .additionalModels(typeResolver.resolve(PostResponseDto.class))
                 .additionalModels(typeResolver.resolve(CommentResponseDto.class))
-                .additionalModels(typeResolver.resolve(StatusResponseDto.class))
+                .additionalModels(typeResolver.resolve(GlobalResponseDto.class))
                 .useDefaultResponseMessages(false)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.sparta.instagramclonebe"))

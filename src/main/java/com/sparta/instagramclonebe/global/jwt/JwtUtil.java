@@ -28,7 +28,7 @@ public class JwtUtil {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_TIME = 60 * 60 * 1000L;
+    private static final long ACCESS_TOKEN_TIME = 60 * 60 * 1000L;
 
     private final UserDetailsService userDetailsService;
 
@@ -53,14 +53,14 @@ public class JwtUtil {
     }
 
     // 토큰 생성
-    public String createToken(String useremail, UserRoleEnum role){
+    public String createToken(String userEmail, UserRoleEnum role){
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(useremail)
+                        .setSubject(userEmail)
                         .claim(AUTHORIZATION_KEY, role)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME))
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();

@@ -5,10 +5,14 @@ import com.sparta.instagramclonebe.domain.user.dto.SignupRequestDto;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.domain.user.entity.UserRoleEnum;
 import com.sparta.instagramclonebe.domain.user.repository.UserRepository;
-import com.sparta.instagramclonebe.global.common.ResponseUtils;
-import com.sparta.instagramclonebe.global.common.SuccessResponseDto;
+import com.sparta.instagramclonebe.global.util.ResponseUtils;
+import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
+import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
+import com.sparta.instagramclonebe.global.excpetion.exceptionType.UserException;
 import com.sparta.instagramclonebe.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public SuccessResponseDto<Void> signup(SignupRequestDto signupRequestDto) { // 회원 가입
+    public ResponseEntity<GlobalResponseDto<Void>> signup(SignupRequestDto signupRequestDto) { // 회원 가입
         String userEmail = signupRequestDto.getUserEmail();
         String password = passwordEncoder.encode(signupRequestDto.getPassword()); // 비밀번호 암호화
         String nickname = signupRequestDto.getNickname();
@@ -35,13 +39,13 @@ public class UserService {
         //회원 중복 확인
         Optional<User> found = userRepository.findByUserEmail(userEmail);
         if (found.isPresent()) {
-            throw new IllegalArgumentException("중복된 이메일 입니다.");
+            throw new UserException(ErrorCode.USER_EMAIL_EXIST);
         }
 
         // 닉네임 중복 확인
         Optional<User> nickNameFound = userRepository.findByNickname(nickname);
         if (nickNameFound.isPresent()) {
-            throw new IllegalArgumentException("중복된 닉네임입니다.");
+            throw new UserException(ErrorCode.USER_NICKNAME_EXIST);
         }
 
         // 사용자 ROLE 확인
@@ -50,24 +54,24 @@ public class UserService {
 
         User user = User.of(userEmail, password, role, nickname);
         userRepository.save(user);
-        return ResponseUtils.ok();
+        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
 
     }
 
     @Transactional(readOnly = true)
-    public SuccessResponseDto<Void> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
+    public ResponseEntity<GlobalResponseDto<Void>> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
         String userEmail = loginRequestDto.getUserEmail();
         String password = loginRequestDto.getPassword();
 
         //사용자 확인
         if (userRepository.findByUserEmail(userEmail).isEmpty()) {
-            throw new IllegalArgumentException("등록된 사용자가 없습니다.");
+            throw new UserException(ErrorCode.USER_ACCOUNT_NOT_EXIST);
         }
 
         //비밀번호 중복 확인
         User user = userRepository.findByUserEmail(userEmail).get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new UserException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         // Authorization 에 token 설정
@@ -81,7 +85,7 @@ public class UserService {
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
 
-        return ResponseUtils.ok();
+        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }
 
 }

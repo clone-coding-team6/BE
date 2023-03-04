@@ -22,7 +22,7 @@ public class Comment extends Timestamped {
     private Long id;
 
     @Column
-    private String contents;
+    private String content;
 
     @ManyToOne
     private Post post;
@@ -32,7 +32,7 @@ public class Comment extends Timestamped {
 
     @Builder
     private Comment(CommentRequestDto requestDto, User user, Post post){
-        this.contents = requestDto.getContents();
+        this.content = requestDto.getContents();
         this.user = user;
         this.post = post;
     }
@@ -46,6 +46,6 @@ public class Comment extends Timestamped {
     }
 
     public void update(CommentRequestDto requestDto) {
-        this.contents = requestDto.getContents();
+        this.content = requestDto.getContents();
     }
 }

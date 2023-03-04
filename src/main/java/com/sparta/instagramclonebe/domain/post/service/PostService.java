@@ -77,7 +77,7 @@ public class PostService {
     public ResponseEntity<PostResponseDto> update(Long id, PostRequestDto requestDto, User user) {
         Post post = getPostById(id);
         if(!post.getUser().equals(user)){
-            throw new IllegalArgumentException("게시글 작성자만 삭제할 수 있습니다.");
+            throw new IllegalArgumentException("게시글 작성자만 수정할 수 있습니다.");
         }
         post.update(requestDto);
         postRepository.flush();

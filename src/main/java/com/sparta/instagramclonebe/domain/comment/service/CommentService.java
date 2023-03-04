@@ -46,7 +46,7 @@ public class CommentService {
     public ResponseEntity<StatusResponseDto> deleteComment(Long id, User user) {
         Comment comment = findCommentByCommentId(id);
         if(!comment.getUser().equals(user)){
-            throw new IllegalArgumentException("작성자만 댓글을 수정할 수 있습니다.");
+            throw new IllegalArgumentException("작성자만 댓글을 삭제할 수 있습니다.");
         }
         commentRepository.delete(comment);
         return ResponseEntity.ok()

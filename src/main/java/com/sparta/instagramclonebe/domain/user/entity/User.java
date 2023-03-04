@@ -1,6 +1,7 @@
 package com.sparta.instagramclonebe.domain.user.entity;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import javax.persistence.*;
 @Entity(name = "users")
 @Getter
 @NoArgsConstructor
+@EqualsAndHashCode
 public class User {
 
     @Id

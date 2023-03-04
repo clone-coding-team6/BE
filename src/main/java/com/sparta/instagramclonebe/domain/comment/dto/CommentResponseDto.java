@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 
 @Getter
 public class CommentResponseDto {
-    private String contents;
+    private String content;
     private LocalDateTime createdAt;
     @Builder
     private CommentResponseDto(Comment comment){
-        this.contents = comment.getContents();
+        this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
     }
     public static CommentResponseDto of(Comment comment){

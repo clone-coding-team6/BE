@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
@@ -69,7 +70,17 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUseremail(), user.getRole()));
+        // Authorization 에 token 설정
+        String token = jwtUtil.createToken(user.getUseremail(), user.getRole());
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+
+        // 쿠키 설정
+        Cookie cookie = new Cookie("token", token.substring(7));
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(3600);
+        response.addCookie(cookie);
+
         return ResponseUtils.ok();
     }
 

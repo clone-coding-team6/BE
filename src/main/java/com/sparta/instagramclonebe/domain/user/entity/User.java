@@ -15,7 +15,7 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String useremail;
+    private String userEmail;
     @Column(nullable = false, unique = true)
     private String nickname;
     @Column(nullable = false)
@@ -26,16 +26,16 @@ public class User {
     private UserRoleEnum role;
 
     @Builder
-    private User(String useremail, String password, UserRoleEnum role, String nickname) {
-        this.useremail = useremail;
+    private User(String userEmail, String password, UserRoleEnum role, String nickname) {
+        this.userEmail = userEmail;
         this.password = password;
         this.role = role;
         this.nickname = nickname;
     }
 
-    public static User of(String useremail, String password, UserRoleEnum role, String nickname) {
+    public static User of(String userEmail, String password, UserRoleEnum role, String nickname) {
         return User.builder()
-                .useremail(useremail)
+                .userEmail(userEmail)
                 .password(password)
                 .role(role)
                 .nickname(nickname)

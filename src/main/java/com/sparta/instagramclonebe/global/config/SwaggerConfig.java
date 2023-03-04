@@ -6,6 +6,7 @@ import com.sparta.instagramclonebe.domain.post.dto.PostResponseDto;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.ResponseEntity;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -31,7 +32,8 @@ public class SwaggerConfig {
                 .additionalModels(typeResolver.resolve(PostResponseDto.class))
                 .additionalModels(typeResolver.resolve(CommentResponseDto.class))
                 .additionalModels(typeResolver.resolve(GlobalResponseDto.class))
-                .useDefaultResponseMessages(false)
+                .additionalModels(typeResolver.resolve(ResponseEntity.class))
+                .useDefaultResponseMessages(true)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.sparta.instagramclonebe"))
                 .paths(PathSelectors.any())

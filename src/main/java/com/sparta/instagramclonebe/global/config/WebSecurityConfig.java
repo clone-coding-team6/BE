@@ -58,7 +58,7 @@ public class WebSecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
 
         return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console())
+//                .requestMatchers(PathRequest.toH2Console())
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 

@@ -17,7 +17,7 @@ public class S3Controller {
 
     // S3 이미지 업로드(+ DB 저장)
     @PostMapping("/file")
-    public ResponseEntity<List<ImageFileRequestDto>> uploadFile(@RequestPart List<MultipartFile> multipartFile) {
+    public ResponseEntity <List<ImageFileRequestDto>> uploadFile(@RequestPart List<MultipartFile> multipartFile) {
         return ResponseEntity.ok().body(s3Service.uploadFile(multipartFile, dirName));
     }
 

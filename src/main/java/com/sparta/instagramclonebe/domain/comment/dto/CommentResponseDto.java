@@ -8,12 +8,14 @@ import java.time.LocalDateTime;
 
 @Getter
 public class CommentResponseDto {
+    private Long id;
     private String content;
     private LocalDateTime createdAt;
     @Builder
     private CommentResponseDto(Comment comment){
         this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
+        this.id = comment.getId();
     }
     public static CommentResponseDto of(Comment comment){
         return CommentResponseDto.builder()

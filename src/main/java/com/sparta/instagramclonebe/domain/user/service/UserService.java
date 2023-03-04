@@ -37,7 +37,7 @@ public class UserService {
         String nickname = signupRequestDto.getNickname();
 
         //회원 중복 확인
-        Optional<User> found = userRepository.findByUseremail(useremail);
+        Optional<User> found = userRepository.findByUserEmail(userEmail);
         if (found.isPresent()) {
             throw new UserException(ErrorCode.USER_EMAIL_EXIST);
         }
@@ -52,7 +52,7 @@ public class UserService {
         UserRoleEnum role = UserRoleEnum.USER;
 
 
-        User user = User.of(useremail, password, role, nickname);
+        User user = User.of(userEmail, password, role, nickname);
         userRepository.save(user);
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
 
@@ -69,13 +69,13 @@ public class UserService {
         }
 
         //비밀번호 중복 확인
-        User user = userRepository.findByUseremail(useremail).get();
+        User user = userRepository.findByUserEmail(userEmail).get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new UserException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         // Authorization 에 token 설정
-        String token = jwtUtil.createToken(user.getUseremail(), user.getRole());
+        String token = jwtUtil.createToken(user.getUserEmail(), user.getRole());
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 
         // 쿠키 설정

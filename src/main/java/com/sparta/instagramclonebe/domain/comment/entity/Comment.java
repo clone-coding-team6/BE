@@ -33,7 +33,7 @@ public class Comment extends Timestamped {
 
     @Builder
     private Comment(CommentRequestDto requestDto, User user, Post post){
-        this.content = requestDto.getContents();
+        this.content = requestDto.getContent();
         this.user = user;
         this.post = post;
     }
@@ -47,6 +47,6 @@ public class Comment extends Timestamped {
     }
 
     public void update(CommentRequestDto requestDto) {
-        this.content = requestDto.getContents();
+        this.content = requestDto.getContent();
     }
 }

@@ -32,7 +32,7 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<GlobalResponseDto<Void>> signup(SignupRequestDto signupRequestDto) { // 회원 가입
-        String useremail = signupRequestDto.getUseremail();
+        String userEmail = signupRequestDto.getUserEmail();
         String password = passwordEncoder.encode(signupRequestDto.getPassword()); // 비밀번호 암호화
         String nickname = signupRequestDto.getNickname();
 
@@ -60,11 +60,11 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<GlobalResponseDto<Void>> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
-        String useremail = loginRequestDto.getUseremail();
+        String userEmail = loginRequestDto.getUserEmail();
         String password = loginRequestDto.getPassword();
 
         //사용자 확인
-        if (userRepository.findByUseremail(useremail).isEmpty()) {
+        if (userRepository.findByUserEmail(userEmail).isEmpty()) {
             throw new UserException(ErrorCode.USER_ACCOUNT_NOT_EXIST);
         }
 

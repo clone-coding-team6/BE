@@ -1,7 +1,6 @@
 package com.sparta.instagramclonebe.domain.like.entity;
 
 import com.sparta.instagramclonebe.domain.comment.entity.Comment;
-import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@Entity
+@Entity(name = "commentLike")
 @NoArgsConstructor
 public class CommentLike {
     @Id

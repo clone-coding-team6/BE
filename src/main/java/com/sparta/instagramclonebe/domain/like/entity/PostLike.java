@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@Entity
+@Entity(name = "postLike")
 @NoArgsConstructor
 public class PostLike {
     @Id

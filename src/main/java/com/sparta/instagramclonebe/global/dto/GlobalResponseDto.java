@@ -1,15 +1,15 @@
-package com.sparta.instagramclonebe.global.common;
+package com.sparta.instagramclonebe.global.dto;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class SuccessResponseDto<T> {
+public class GlobalResponseDto<T> {
     private boolean success;
     private T data;
 
     @Builder
-    public SuccessResponseDto(boolean success, T data) {
+    public GlobalResponseDto(boolean success, T data) {
         this.success = success;
         this.data = data;
     }

@@ -5,6 +5,7 @@ import com.sparta.instagramclonebe.domain.comment.dto.CommentRequestDto;
 import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.global.util.Timestamped;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "comment")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends Timestamped {
 
     @Id

@@ -1,7 +1,7 @@
 package com.sparta.instagramclonebe.domain.like.controller;
 
 import com.sparta.instagramclonebe.domain.like.service.LikeService;
-import com.sparta.instagramclonebe.global.dto.StatusResponseDto;
+import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import com.sparta.instagramclonebe.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +19,13 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/posts/like/{id}")
-    public ResponseEntity<StatusResponseDto> createPostLike(
+    public  ResponseEntity<GlobalResponseDto<String>> createPostLike(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return likeService.createPostLike(id, userDetails.getUser());
     }
     @PostMapping("/comments/like/{id}")
-    public ResponseEntity<StatusResponseDto> createCommentsLike(
+    public  ResponseEntity<GlobalResponseDto<String>> createCommentsLike(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return likeService.createCommentsLike(id, userDetails.getUser());

@@ -1,15 +1,12 @@
 package com.sparta.instagramclonebe.domain.user.entity;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class User {
 
@@ -18,7 +15,7 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String useremail;
     @Column(nullable = false, unique = true)
     private String nickname;
     @Column(nullable = false)
@@ -29,16 +26,16 @@ public class User {
     private UserRoleEnum role;
 
     @Builder
-    private User(String username, String password, UserRoleEnum role, String nickname) {
-        this.username = username;
+    private User(String useremail, String password, UserRoleEnum role, String nickname) {
+        this.useremail = useremail;
         this.password = password;
         this.role = role;
         this.nickname = nickname;
     }
 
-    public static User of(String username, String password, UserRoleEnum role, String nickname) {
+    public static User of(String useremail, String password, UserRoleEnum role, String nickname) {
         return User.builder()
-                .username(username)
+                .useremail(useremail)
                 .password(password)
                 .role(role)
                 .nickname(nickname)

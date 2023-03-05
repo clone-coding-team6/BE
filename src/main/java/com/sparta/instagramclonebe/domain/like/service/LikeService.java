@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
+    @Transactional
     public ResponseEntity<GlobalResponseDto<String>> createPostLike(Long id, User user) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new PostException(ErrorCode.POST_NOT_FOUND)
@@ -48,6 +50,7 @@ public class LikeService {
         }
     }
 
+    @Transactional
     public ResponseEntity<GlobalResponseDto<String>> createCommentsLike(Long id, User user) {
         Comment comment = commentRepository.findById(id).orElseThrow(
                 () -> new PostException(ErrorCode.COMMENT_NOT_FOUND)

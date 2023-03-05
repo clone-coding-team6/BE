@@ -82,12 +82,18 @@ public class PostService {
         if(!post.getUser().equals(user)){
             throw new PostException(ErrorCode.POST_DELETE_FAILED);
         }
+        List<Comment> commentList = commentRepository.findAllByPostId(post.getId());
+        for(Comment comment : commentList){
+            commentLikeRepository.deleteAllByCommentId(comment.getId());
+        }
+        postLikeRepository.deleteAllByPostId(post.getId());
+        commentRepository.deleteAllByPostId(post.getId());
         postRepository.deleteById(post.getId());
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }
 
     private List<CommentResponseDto> getCommentResponseDtoList(Post post) {
-        List<Comment> commentList = commentRepository.findAllByPost(post);
+        List<Comment> commentList = commentRepository.findAllByPostId(post.getId());
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
         for(Comment comment : commentList){
             Long commentLikeCount = commentLikeRepository.countByComment(comment);

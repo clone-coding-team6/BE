@@ -14,12 +14,10 @@ public class PostRequestDto {
 
     @Size(min = 1, max = 3000, message = "게시글 내용은 1글자 이상 3000자 이하로만 작성할 수 있습니다.")
     private String content;
-    private String imageUrl;
 
     @Builder
     private PostRequestDto(Post post){
         this.content = post.getContent();
-        this.imageUrl = post.getImageUrl();
     }
 
     public static PostRequestDto of(Post post){

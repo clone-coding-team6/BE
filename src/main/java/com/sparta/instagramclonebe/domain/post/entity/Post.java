@@ -1,5 +1,6 @@
 package com.sparta.instagramclonebe.domain.post.entity;
 
+import com.sparta.instagramclonebe.domain.image.entity.Image;
 import com.sparta.instagramclonebe.domain.post.dto.PostRequestDto;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.global.util.Timestamped;
@@ -9,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -21,29 +24,28 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String content;
 
-    @Column
-    private String imageUrl;
-
     @ManyToOne
     @JoinColumn(name = "USER_ID", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List <Image> imageList = new ArrayList<>();
+
     @Builder
-    private Post(PostRequestDto postDto, User user) {
-        this.content = postDto.getContent();
-        this.imageUrl = postDto.getImageUrl();
+    private Post(PostRequestDto postRequestDto, User user) {
+        this.content = postRequestDto.getContent();
         this.user = user;
     }
 
-    public static Post of(PostRequestDto postDto, User user) {
+    public static Post of(PostRequestDto postRequestDtoDto, User user) {
         return Post.builder()
-                .postDto(postDto)
+                .postRequestDto(postRequestDtoDto)
                 .user(user)
                 .build();
     }
 
-    public void update(PostRequestDto postDto) {
-        this.content = postDto.getContent();
+    public void update(PostRequestDto postRequestDto) {
+        this.content = postRequestDto.getContent();
     }
 
 }

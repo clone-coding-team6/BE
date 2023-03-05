@@ -4,6 +4,7 @@ import com.sparta.instagramclonebe.domain.comment.dto.CommentRequestDto;
 import com.sparta.instagramclonebe.domain.comment.dto.CommentResponseDto;
 import com.sparta.instagramclonebe.domain.comment.entity.Comment;
 import com.sparta.instagramclonebe.domain.comment.repository.CommentRepository;
+import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
 import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.post.repository.PostRepository;
 import com.sparta.instagramclonebe.domain.user.entity.User;
@@ -24,6 +25,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     @Transactional
     public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(Long id, CommentRequestDto requestDto, User user) {
@@ -38,6 +40,7 @@ public class CommentService {
         if(!comment.getUser().equals(user)){
             throw new CommentException(ErrorCode.COMMENT_DELETE_FAILED);
         }
+        commentLikeRepository.deleteAllByCommentId(comment.getId());
         commentRepository.delete(comment);
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }

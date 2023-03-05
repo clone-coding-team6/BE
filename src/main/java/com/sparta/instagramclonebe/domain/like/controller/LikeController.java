@@ -18,13 +18,13 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/posts/like/{id}")
+    @PostMapping("/posts/likes/{id}")
     public  ResponseEntity<GlobalResponseDto<String>> createPostLike(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return likeService.createPostLike(id, userDetails.getUser());
     }
-    @PostMapping("/comments/like/{id}")
+    @PostMapping("/comment/likes/{id}")
     public  ResponseEntity<GlobalResponseDto<String>> createCommentsLike(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {

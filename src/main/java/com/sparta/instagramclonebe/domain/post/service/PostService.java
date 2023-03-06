@@ -109,7 +109,7 @@ public class PostService {
         List<Image> imageFileList = imageRepository.findAllByPostId(post.getId());
         for (Image imageFile : imageFileList) {
             String uploadPath = imageFile.getUploadPath();
-            String filename = uploadPath.substring(56);
+            String filename = uploadPath.substring(61);
             s3Service.deleteFile(filename);
         }
 

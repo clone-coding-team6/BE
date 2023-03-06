@@ -59,9 +59,9 @@ public class PostService {
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
         for (Post post : postList) {
-            List<String> imageList = getImageList(post);
+            List<String> imagePathList = ImagePathList(post);
             List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
-            responseDtoList.add(PostResponseDto.of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList, imageList));
+            responseDtoList.add(PostResponseDto.of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList, imagePathList));
         }
         return new ResponseEntity<>(ResponseUtils.ok(responseDtoList), HttpStatus.OK);
     }
@@ -71,10 +71,10 @@ public class PostService {
     public ResponseEntity<GlobalResponseDto<PostResponseDto>> getPost(Long id) {
 
         Post post = getPostById(id);
-        List<String> imageList = getImageList(post);
+        List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
         return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imageList)), HttpStatus.OK);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imagePathList)), HttpStatus.OK);
     }
 
     // 게시글 수정
@@ -87,10 +87,10 @@ public class PostService {
         }
         post.update(requestDto);
         postRepository.flush();
-        List<String> imageList = getImageList(post);
+        List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
         return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imageList)), HttpStatus.OK);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imagePathList)), HttpStatus.OK);
     }
 
     // 게시글 삭제
@@ -106,10 +106,9 @@ public class PostService {
         for (Comment comment : commentList) {
             commentLikeRepository.deleteAllByCommentId(comment.getId());
         }
-        List<Image> imageFileList = imageRepository.findAllByPostId(post.getId());
-        for (Image imageFile : imageFileList) {
-            String uploadPath = imageFile.getUploadPath();
-
+        List<Image> imagePathList = imageRepository.findAllByPostId(post.getId());
+        for (Image image : imagePathList) {
+            String uploadPath = image.getUploadPath();
             String filename = uploadPath.substring(61);
             s3Service.deleteFile(filename);
         }
@@ -133,12 +132,14 @@ public class PostService {
         return commentResponseDtoList;
     }
 
-    private List<String> getImageList(Post post) {
-        List<String> imageList = new ArrayList<>();
-        for (Image image : post.getImageList()) {
-            imageList.add(image.getUploadPath());
+    private List<String> ImagePathList (Post post) {
+        List<Image> imageList = imageRepository.findAllByPostId(post.getId());
+        List<String> imagePathList = new ArrayList<>();
+
+        for (Image image : imageList) {
+            imagePathList.add(image.getUploadPath());
         }
-        return imageList;
+        return imagePathList;
     }
 
     private Post getPostById(Long id) {

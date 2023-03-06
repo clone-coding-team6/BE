@@ -28,8 +28,6 @@ public class Post extends Timestamped {
     @JoinColumn(name = "USER_ID", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List <Image> imageList = new ArrayList<>();
 
     @Builder
     private Post(PostRequestDto postRequestDto, User user) {

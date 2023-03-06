@@ -4,6 +4,8 @@ package com.sparta.instagramclonebe.domain.post.service;
 import com.sparta.instagramclonebe.domain.comment.dto.CommentResponseDto;
 import com.sparta.instagramclonebe.domain.comment.entity.Comment;
 import com.sparta.instagramclonebe.domain.comment.repository.CommentRepository;
+import com.sparta.instagramclonebe.domain.image.entity.Image;
+import com.sparta.instagramclonebe.domain.image.repository.ImageRepository;
 import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
 import com.sparta.instagramclonebe.domain.like.repository.PostLikeRepository;
 import com.sparta.instagramclonebe.domain.post.dto.PostRequestDto;
@@ -15,12 +17,15 @@ import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
 import com.sparta.instagramclonebe.global.excpetion.exceptionType.PostException;
 import com.sparta.instagramclonebe.global.util.ResponseUtils;
+import com.sparta.instagramclonebe.global.util.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,23 +36,32 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final CommentRepository commentRepository;
+    private final ImageRepository imageRepository;
+    private final S3Service s3Service;
 
-    //게시글 작성
+    // 게시글 작성
     @Transactional
-    public ResponseEntity<GlobalResponseDto<PostResponseDto>> createPost(PostRequestDto requestDto, User user) {
-        Post post = Post.of(requestDto, user);
-        postRepository.save(post);
+    public ResponseEntity<GlobalResponseDto<PostResponseDto>> createPost(PostRequestDto postRequestDto, User user, List<MultipartFile> multipartFilelist) throws IOException {
+
+        Post post = postRepository.saveAndFlush(Post.of(postRequestDto, user));
+
+        if (multipartFilelist != null) {
+            s3Service.upload(multipartFilelist, "static", post, user);
+        }
         return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto.of(post)), HttpStatus.OK);
+
     }
 
-    //전체 게시글 조회
+    // 전체 게시글 조회
     @Transactional(readOnly = true)
     public ResponseEntity<GlobalResponseDto<List<PostResponseDto>>> getPosts() {
+
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
-        for (Post post : postList){
+        for (Post post : postList) {
+            List<String> imageList = getImageList(post);
             List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
-            responseDtoList.add(PostResponseDto.of(post,postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList));
+            responseDtoList.add(PostResponseDto.of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList, imageList));
         }
         return new ResponseEntity<>(ResponseUtils.ok(responseDtoList), HttpStatus.OK);
     }
@@ -55,51 +69,75 @@ public class PostService {
     // 게시글 상세 조회
     @Transactional(readOnly = true)
     public ResponseEntity<GlobalResponseDto<PostResponseDto>> getPost(Long id) {
+
         Post post = getPostById(id);
+        List<String> imageList = getImageList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
         return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post,postLikeRepository.countPostLikeByPostId(post.getId()),commentResponseDtoList)), HttpStatus.OK);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imageList)), HttpStatus.OK);
     }
 
-    //게시글 수정
+    // 게시글 수정
     @Transactional
     public ResponseEntity<GlobalResponseDto<PostResponseDto>> update(Long id, PostRequestDto requestDto, User user) {
+
         Post post = getPostById(id);
-        if(!post.getUser().equals(user)){
+        if (!post.getUser().equals(user)) {
             throw new PostException(ErrorCode.POST_UPDATE_FAILED);
         }
         post.update(requestDto);
         postRepository.flush();
+        List<String> imageList = getImageList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
         return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post,postLikeRepository.countPostLikeByPostId(post.getId()),commentResponseDtoList)), HttpStatus.OK);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), commentResponseDtoList,imageList)), HttpStatus.OK);
     }
 
-    //게시글 삭제
+    // 게시글 삭제
     @Transactional
     public ResponseEntity<GlobalResponseDto<Void>> deletePost(Long id, User user) {
+
         Post post = getPostById(id);
-        if(!post.getUser().equals(user)){
+        if (!post.getUser().equals(user)) {
             throw new PostException(ErrorCode.POST_DELETE_FAILED);
         }
+
         List<Comment> commentList = commentRepository.findAllByPostId(post.getId());
-        for(Comment comment : commentList){
+        for (Comment comment : commentList) {
             commentLikeRepository.deleteAllByCommentId(comment.getId());
         }
+        List<Image> imageFileList = imageRepository.findAllByPostId(post.getId());
+        for (Image imageFile : imageFileList) {
+            String uploadPath = imageFile.getUploadPath();
+            String filename = uploadPath.substring(56);
+            s3Service.deleteFile(filename);
+        }
+
+        imageRepository.deleteAllByPostId(post.getId());
         postLikeRepository.deleteAllByPostId(post.getId());
         commentRepository.deleteAllByPostId(post.getId());
         postRepository.deleteById(post.getId());
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }
 
+    /* ========================================= METHOD =========================================*/
+
     private List<CommentResponseDto> getCommentResponseDtoList(Post post) {
         List<Comment> commentList = commentRepository.findAllByPostId(post.getId());
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
-        for(Comment comment : commentList){
+        for (Comment comment : commentList) {
             Long commentLikeCount = commentLikeRepository.countByComment(comment);
             commentResponseDtoList.add(CommentResponseDto.of(comment, commentLikeCount));
         }
         return commentResponseDtoList;
+    }
+
+    private List<String> getImageList(Post post) {
+        List<String> imageList = new ArrayList<>();
+        for (Image image : post.getImageList()) {
+            imageList.add(image.getUploadPath());
+        }
+        return imageList;
     }
 
     private Post getPostById(Long id) {

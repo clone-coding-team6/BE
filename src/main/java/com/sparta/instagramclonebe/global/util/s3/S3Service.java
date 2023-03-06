@@ -35,6 +35,8 @@ public class S3Service {
 
     private final AmazonS3 S3Client;
     private final ImageRepository imageRepository;
+
+    // 이미지 S3 업로드 + DB 업로드
     public void upload(List<MultipartFile> multipartFilelist, String dirName, Post post , User user) throws IOException {
 
         for (MultipartFile multipartFile : multipartFilelist){

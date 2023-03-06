@@ -19,7 +19,7 @@ public class Image extends Timestamped {
     private Long id;
 
     @Column(nullable = false)
-    private String uploadPath;
+    private String uploadPath; // url이라고 보시면 됩니다.
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "POST_ID", nullable = true)

@@ -89,8 +89,8 @@ public class JwtUtil {
     }
 
     // 인증 객체 생성
-    public Authentication createAuthentication(String useremail){
-        UserDetails userDetails = userDetailsService.loadUserByUsername(useremail);
+    public Authentication createAuthentication(String userEmail){
+        UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 

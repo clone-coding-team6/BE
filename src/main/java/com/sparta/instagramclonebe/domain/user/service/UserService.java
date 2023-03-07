@@ -30,10 +30,11 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    // 회원가입
     @Transactional
-    public ResponseEntity<GlobalResponseDto<Void>> signup(SignupRequestDto signupRequestDto) { // 회원 가입
+    public ResponseEntity<GlobalResponseDto<Void>> signup(SignupRequestDto signupRequestDto) {
         String userEmail = signupRequestDto.getUserEmail();
-        String password = passwordEncoder.encode(signupRequestDto.getPassword()); // 비밀번호 암호화
+        String password = passwordEncoder.encode(signupRequestDto.getPassword());
         String nickname = signupRequestDto.getNickname();
 
         //회원 중복 확인
@@ -58,27 +59,24 @@ public class UserService {
 
     }
 
+    // 로그인
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto<Void>> login(LoginRequestDto loginRequestDto, HttpServletResponse response) { // 로그인
+    public ResponseEntity<GlobalResponseDto<Void>> login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String userEmail = loginRequestDto.getUserEmail();
         String password = loginRequestDto.getPassword();
 
-        //사용자 확인
         if (userRepository.findByUserEmail(userEmail).isEmpty()) {
             throw new UserException(ErrorCode.USER_ACCOUNT_NOT_EXIST);
         }
 
-        //비밀번호 중복 확인
         User user = userRepository.findByUserEmail(userEmail).get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new UserException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        // Authorization 에 token 설정
         String token = jwtUtil.createToken(user.getUserEmail(), user.getRole());
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 
-        // 쿠키 설정
         Cookie cookie = new Cookie("token", token.substring(7));
         cookie.setPath("/");
         cookie.setHttpOnly(true);

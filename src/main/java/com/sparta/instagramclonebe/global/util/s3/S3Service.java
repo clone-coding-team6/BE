@@ -36,19 +36,17 @@ public class S3Service {
     private final AmazonS3 S3Client;
     private final ImageRepository imageRepository;
 
-    // 이미지 S3 업로드 + DB 업로드
     public void upload(List<MultipartFile> multipartFilelist, String dirName, Post post , User user) throws IOException {
 
         for (MultipartFile multipartFile : multipartFilelist){
             if (multipartFile != null){
                 File uploadFile = convert(multipartFile).orElseThrow(() -> new IllegalArgumentException("파일 전환 실패"));
-                Image image = new Image(upload(uploadFile, dirName), user, post);
+                Image image = Image.of(upload(uploadFile, dirName), user, post);
                 imageRepository.save(image);
             }
         }
     }
 
-    // S3로 파일 업로드하기
     private String upload(File uploadFile, String dirName) {
         String fileName = dirName + "/" + UUID.randomUUID(); // S3에 저장된 파일 이름
         String uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
@@ -56,14 +54,12 @@ public class S3Service {
         return uploadImageUrl;
     }
 
-    // S3로 업로드
     private String putS3(File uploadFile, String fileName) {
         S3Client.putObject(new PutObjectRequest(bucketName, fileName, uploadFile).withCannedAcl(CannedAccessControlList.PublicRead));
         return S3Client.getUrl(bucketName, fileName).toString();
     }
 
 
-    // 로컬에 저장된 이미지 지우기
     private void removeNewFile(File targetFile) {
         if (targetFile.delete()) {
             log.info("File delete success");

@@ -12,6 +12,7 @@ public class CommentResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private Long commentLikeCount;
+
     @Builder
     private CommentResponseDto(Comment comment, Long commentLikeCount){
         this.content = comment.getContent();
@@ -19,6 +20,7 @@ public class CommentResponseDto {
         this.id = comment.getId();
         this.commentLikeCount = commentLikeCount;
     }
+
     public static CommentResponseDto of(Comment comment){
         return CommentResponseDto.builder()
                 .comment(comment)

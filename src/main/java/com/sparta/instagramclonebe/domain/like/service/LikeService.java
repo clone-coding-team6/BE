@@ -38,7 +38,6 @@ public class LikeService {
 
         Optional<PostLike> postLike = postLikeRepository.findByPostIdAndUserId(id, user.getId());
 
-
         if (postLike.isEmpty()) {
             postLikeRepository.saveAndFlush(PostLike.of(post, user));
             return new ResponseEntity<>(ResponseUtils.ok("좋아요 성공!"), HttpStatus.OK);
@@ -57,7 +56,6 @@ public class LikeService {
         );
 
         Optional<CommentLike> commentLike = commentLikeRepository.findByCommentIdAndUserId(id, user.getId());
-
 
         if (commentLike.isEmpty()) {
             commentLikeRepository.saveAndFlush(CommentLike.of(comment, user));

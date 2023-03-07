@@ -17,21 +17,27 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    //create
+    // 댓글 작성
     @PostMapping("/comment")
-    public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(@RequestParam(value = "postId") Long postId, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(@RequestParam(value = "postId") Long postId,
+                                                                               @RequestBody CommentRequestDto commentRequestDto,
+                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.createComment(postId, commentRequestDto, userDetails.getUser());
     }
 
-    //delete
+    // 댓글 삭제
     @DeleteMapping("/comment/{id}")
-    public ResponseEntity<GlobalResponseDto<Void>> deleteComment(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<GlobalResponseDto<Void>> deleteComment(@PathVariable Long id,
+                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.deleteComment(id, userDetails.getUser());
     }
 
-    //    //update
-//    @PutMapping("/commentnumber/{commentId}")
-//    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long commentId, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    // 댓글 수정
+//    @PutMapping("/commentNumber/{commentId}")
+//    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long commentId,
+//                                                            @RequestBody CommentRequestDto commentRequestDto,
+//                                                            @AuthenticationPrincipal UserDetailsImpl userDetails){
 //        return commentService.updateComment(commentId, commentRequestDto, userDetails.getUser());
 //    }
+
 }

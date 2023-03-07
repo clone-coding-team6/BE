@@ -72,14 +72,23 @@ public class UserService {
             throw new UserException(CustomStatusCode.PASSWORD_MISMATCH);
         }
 
-        String token = jwtUtil.createToken(user.getUserEmail(), user.getRole());
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+        String token = jwtUtil.createToken(user.getUserEmail(), "Access");
+        response.addHeader(JwtUtil.ACCESS_TOKEN, token);
 
         Cookie cookie = new Cookie("token", token.substring(7));
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
+
+        String tokens = jwtUtil.createToken(user.getUserEmail(), "Refresh");
+        response.addHeader(JwtUtil.REFRESH_TOKEN, token);
+
+        Cookie cookies = new Cookie("token", tokens.substring(7));
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(604800);
+        response.addCookie(cookies);
 
         return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.LOG_IN_SUCCESS));
     }

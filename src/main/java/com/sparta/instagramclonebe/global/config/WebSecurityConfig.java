@@ -26,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -48,7 +49,7 @@ public class WebSecurityConfig {
 
         return source;
     }
-    // 비밀번호 암호화
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -68,14 +69,12 @@ public class WebSecurityConfig {
         http.csrf().disable();
         http.formLogin().disable();
 
-        //기본 설정인 Session 방식 사용하지 않고 JWT 방식 사용
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests().antMatchers("/api/users/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
                 .anyRequest().authenticated()
-                // JWT 인증/인가를 사용하기 위한 설정
                 .and().addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

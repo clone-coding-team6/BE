@@ -24,7 +24,6 @@ public class PostLike {
     @JoinColumn(name = "USER_ID",nullable = false)
     private User user;
 
-
     @Builder
     private PostLike(Post post, User user)
     {

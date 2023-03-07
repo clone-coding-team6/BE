@@ -27,13 +27,15 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentLikeRepository commentLikeRepository;
 
+    // 댓글 작성
     @Transactional
     public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(Long id, CommentRequestDto requestDto, User user) {
-        Post post = findPostByPostId(id); // pathvariable로 받아 왔던 게시글의 id를 통해 게시글 찾는다
-        Comment comment = commentRepository.save(Comment.of(requestDto, user, post)); // 코멘트를 생성하고 저장한다.
+        Post post = findPostByPostId(id);
+        Comment comment = commentRepository.save(Comment.of(requestDto, user, post));
         return new ResponseEntity<>(ResponseUtils.ok(CommentResponseDto.of(comment)), HttpStatus.OK);
-    }
 
+    }
+    // 댓글 삭제
     @Transactional
     public ResponseEntity<GlobalResponseDto<Void>> deleteComment(Long id, User user) {
         Comment comment = findCommentByCommentId(id);
@@ -44,6 +46,7 @@ public class CommentService {
         commentRepository.delete(comment);
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }
+
     private Comment findCommentByCommentId(Long id) {
         return commentRepository.findById(id).orElseThrow(
                 () -> new CommentException(ErrorCode.COMMENT_NOT_FOUND)

@@ -14,7 +14,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    //인증이 완료된 사용자 불러오기
     @Override
     public UserDetails loadUserByUsername(String userEmail) {
         User user = userRepository.findByUserEmail(userEmail)

@@ -6,12 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
 @NoArgsConstructor
 public class PostRequestDto {
 
+    @NotNull(message = "게시글 내용은 필수입니다.")
     @Size(min = 1, max = 3000, message = "게시글 내용은 1글자 이상 3000자 이하로만 작성할 수 있습니다.")
     private String content;
 

@@ -5,6 +5,9 @@ import com.sparta.instagramclonebe.domain.user.dto.SignupRequestDto;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.domain.user.entity.UserRoleEnum;
 import com.sparta.instagramclonebe.domain.user.repository.UserRepository;
+import com.sparta.instagramclonebe.global.redis.RefreshToken;
+import com.sparta.instagramclonebe.global.redis.RefreshTokenRepository;
+import com.sparta.instagramclonebe.global.redis.TokenDto;
 import com.sparta.instagramclonebe.global.util.ResponseUtils;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
@@ -27,6 +30,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
@@ -74,9 +78,20 @@ public class UserService {
             throw new UserException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        // Authorization 에 token 설정
-        String token = jwtUtil.createToken(user.getUserEmail(), user.getRole());
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+        TokenDto tokenDto = jwtUtil.createAllToken(userEmail);
+
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findAllByUserEmail(userEmail);
+
+        if(refreshToken.isPresent()) { // 유저의 리프레시 토큰이 있으면 기존에 있는걸 새로운 리프레시 토큰으로 갈아 끼워줌
+            refreshTokenRepository.save(refreshToken.get().updateToken(tokenDto.getRefreshToken()));
+        }else { // 리프레시 토큰이 없다면 인증할때 만든 객체랑 새로운 리프레시 토큰을 같이 넣어줌
+            RefreshToken newRefreshToken = new RefreshToken(tokenDto.getRefreshToken(), userEmail);
+            refreshTokenRepository.save(newRefreshToken);
+        }
+
+        // Authorization 에 AccessToken 설정
+        String token = jwtUtil.createToken(user.getUserEmail(), "Access");
+        response.addHeader(JwtUtil.ACCESS_TOKEN, token);
 
         // 쿠키 설정
         Cookie cookie = new Cookie("token", token.substring(7));
@@ -85,7 +100,18 @@ public class UserService {
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
 
+        // Authorization 에 RefreshToken 설정
+        String tokens = jwtUtil.createToken(user.getUserEmail(), "Refresh");
+        response.addHeader(JwtUtil.REFRESH_TOKEN, token);
+
+        // 쿠키 설정
+        Cookie cookies = new Cookie("token", tokens.substring(7));
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(604800);
+        response.addCookie(cookies);
+
         return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
     }
-
 }
+

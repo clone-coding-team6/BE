@@ -10,11 +10,9 @@ import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.post.repository.PostRepository;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
-import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
-import com.sparta.instagramclonebe.global.excpetion.exceptionType.PostException;
-import com.sparta.instagramclonebe.global.util.ResponseUtils;
+import com.sparta.instagramclonebe.global.response.CustomStatusCode;
+import com.sparta.instagramclonebe.global.response.exceptionType.PostException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,38 +29,37 @@ public class LikeService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public ResponseEntity<GlobalResponseDto<String>> createPostLike(Long id, User user) {
+    public ResponseEntity<GlobalResponseDto> createPostLike(Long id, User user) {
         Post post = postRepository.findById(id).orElseThrow(
-                () -> new PostException(ErrorCode.POST_NOT_FOUND)
+                () -> new PostException(CustomStatusCode.POST_NOT_FOUND)
         );
 
         Optional<PostLike> postLike = postLikeRepository.findByPostIdAndUserId(id, user.getId());
 
         if (postLike.isEmpty()) {
             postLikeRepository.saveAndFlush(PostLike.of(post, user));
-            return new ResponseEntity<>(ResponseUtils.ok("좋아요 성공!"), HttpStatus.OK);
+            return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_LIKE_SUCCESS));
 
         } else {
             postLikeRepository.deleteByPostIdAndUserId(id, user.getId());
-            return new ResponseEntity<>(ResponseUtils.ok("좋아요 취소!"), HttpStatus.OK);
-
+            return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_LIKE_CANCEL));
         }
     }
 
     @Transactional
-    public ResponseEntity<GlobalResponseDto<String>> createCommentsLike(Long id, User user) {
+    public ResponseEntity<GlobalResponseDto> createCommentsLike(Long id, User user) {
         Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new PostException(ErrorCode.COMMENT_NOT_FOUND)
+                () -> new PostException(CustomStatusCode.COMMENT_NOT_FOUND)
         );
 
         Optional<CommentLike> commentLike = commentLikeRepository.findByCommentIdAndUserId(id, user.getId());
 
         if (commentLike.isEmpty()) {
             commentLikeRepository.saveAndFlush(CommentLike.of(comment, user));
-            return new ResponseEntity<>(ResponseUtils.ok("좋아요 성공!"), HttpStatus.OK);
+            return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.COMMENT_LIKE_SUCCESS));
         } else {
             commentLikeRepository.deleteByCommentIdAndUserId(id, user.getId());
-            return new ResponseEntity<>(ResponseUtils.ok("좋아요 취소!"), HttpStatus.OK);
+            return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.COMMENT_LIKE_CANCEL));
         }
 
     }

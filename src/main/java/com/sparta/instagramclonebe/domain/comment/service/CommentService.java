@@ -8,13 +8,11 @@ import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
 import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.post.repository.PostRepository;
 import com.sparta.instagramclonebe.domain.user.entity.User;
-import com.sparta.instagramclonebe.global.util.ResponseUtils;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
-import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
-import com.sparta.instagramclonebe.global.excpetion.exceptionType.CommentException;
-import com.sparta.instagramclonebe.global.excpetion.exceptionType.PostException;
+import com.sparta.instagramclonebe.global.response.CustomStatusCode;
+import com.sparta.instagramclonebe.global.response.exceptionType.CommentException;
+import com.sparta.instagramclonebe.global.response.exceptionType.PostException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,33 +27,34 @@ public class CommentService {
 
     // 댓글 작성
     @Transactional
-    public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(Long id, CommentRequestDto requestDto, User user) {
+    public ResponseEntity<GlobalResponseDto> createComment(Long id, CommentRequestDto requestDto, User user) {
         Post post = findPostByPostId(id);
         Comment comment = commentRepository.save(Comment.of(requestDto, user, post));
-        return new ResponseEntity<>(ResponseUtils.ok(CommentResponseDto.of(comment)), HttpStatus.OK);
-
+        return ResponseEntity.ok()
+                .body(GlobalResponseDto.of(CustomStatusCode.COMMENT_UPLOAD_SUCCESS, CommentResponseDto.of(comment)));
     }
     // 댓글 삭제
     @Transactional
-    public ResponseEntity<GlobalResponseDto<Void>> deleteComment(Long id, User user) {
+    public ResponseEntity<GlobalResponseDto> deleteComment(Long id, User user) {
         Comment comment = findCommentByCommentId(id);
         if(!comment.getUser().equals(user)){
-            throw new CommentException(ErrorCode.COMMENT_DELETE_FAILED);
+            throw new CommentException(CustomStatusCode.COMMENT_DELETE_FAILED);
         }
         commentLikeRepository.deleteAllByCommentId(comment.getId());
         commentRepository.delete(comment);
-        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
+        return ResponseEntity.ok()
+                .body(GlobalResponseDto.of(CustomStatusCode.COMMENT_DELETE_SUCCESS));
     }
 
     private Comment findCommentByCommentId(Long id) {
         return commentRepository.findById(id).orElseThrow(
-                () -> new CommentException(ErrorCode.COMMENT_NOT_FOUND)
+                () -> new CommentException(CustomStatusCode.COMMENT_NOT_FOUND)
         );
     }
 
     private Post findPostByPostId(Long id) {
         return postRepository.findById(id).orElseThrow(
-                () -> new PostException(ErrorCode.POST_NOT_FOUND)
+                () -> new PostException(CustomStatusCode.POST_NOT_FOUND)
         );
     }
 

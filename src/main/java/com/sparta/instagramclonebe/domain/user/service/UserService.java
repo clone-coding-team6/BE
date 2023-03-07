@@ -5,13 +5,11 @@ import com.sparta.instagramclonebe.domain.user.dto.SignupRequestDto;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.domain.user.entity.UserRoleEnum;
 import com.sparta.instagramclonebe.domain.user.repository.UserRepository;
-import com.sparta.instagramclonebe.global.util.ResponseUtils;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
-import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
-import com.sparta.instagramclonebe.global.excpetion.exceptionType.UserException;
 import com.sparta.instagramclonebe.global.jwt.JwtUtil;
+import com.sparta.instagramclonebe.global.response.CustomStatusCode;
+import com.sparta.instagramclonebe.global.response.exceptionType.UserException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +30,7 @@ public class UserService {
 
     // 회원가입
     @Transactional
-    public ResponseEntity<GlobalResponseDto<Void>> signup(SignupRequestDto signupRequestDto) {
+    public ResponseEntity<GlobalResponseDto> signup(SignupRequestDto signupRequestDto) {
         String userEmail = signupRequestDto.getUserEmail();
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
         String nickname = signupRequestDto.getNickname();
@@ -40,13 +38,13 @@ public class UserService {
         //회원 중복 확인
         Optional<User> found = userRepository.findByUserEmail(userEmail);
         if (found.isPresent()) {
-            throw new UserException(ErrorCode.USER_EMAIL_EXIST);
+            throw new UserException(CustomStatusCode.USER_EMAIL_EXIST);
         }
 
         // 닉네임 중복 확인
         Optional<User> nickNameFound = userRepository.findByNickname(nickname);
         if (nickNameFound.isPresent()) {
-            throw new UserException(ErrorCode.USER_NICKNAME_EXIST);
+            throw new UserException(CustomStatusCode.USER_NICKNAME_EXIST);
         }
 
         // 사용자 ROLE 확인
@@ -55,23 +53,23 @@ public class UserService {
 
         User user = User.of(userEmail, password, role, nickname);
         userRepository.save(user);
-        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.SIGN_UP_SUCCESS));
 
     }
 
     // 로그인
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto<Void>> login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public ResponseEntity<GlobalResponseDto> login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String userEmail = loginRequestDto.getUserEmail();
         String password = loginRequestDto.getPassword();
 
         if (userRepository.findByUserEmail(userEmail).isEmpty()) {
-            throw new UserException(ErrorCode.USER_ACCOUNT_NOT_EXIST);
+            throw new UserException(CustomStatusCode.USER_ACCOUNT_NOT_EXIST);
         }
 
         User user = userRepository.findByUserEmail(userEmail).get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new UserException(ErrorCode.PASSWORD_MISMATCH);
+            throw new UserException(CustomStatusCode.PASSWORD_MISMATCH);
         }
 
         String token = jwtUtil.createToken(user.getUserEmail(), user.getRole());
@@ -83,7 +81,7 @@ public class UserService {
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
 
-        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.LOG_IN_SUCCESS));
     }
 
 }

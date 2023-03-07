@@ -1,9 +1,9 @@
 package com.sparta.instagramclonebe.global.jwt;
 
+import com.sparta.instagramclonebe.global.response.CustomStatusCode;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,14 +29,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // 토큰이 null 이면 다음 필터로 넘어간다
         if (token == null) {
-            request.setAttribute("exception", HttpStatus.UNAUTHORIZED.value());
+            request.setAttribute("exception", CustomStatusCode.TOKEN_NOT_FOUND);
             filterChain.doFilter(request, response);
             return;
         }
 
         // 토큰이 유효하지 않으면 다음 필터로 넘어간다
         if (!jwtUtil.validateToken(token)) {
-            request.setAttribute("exception", HttpStatus.UNAUTHORIZED.value());
+            request.setAttribute("exception", CustomStatusCode.NOT_VALID_TOKEN);
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             setAuthentication(info.getSubject());   // 사용자 정보로 인증 객체 만들기
         } catch (UsernameNotFoundException e) {
-            request.setAttribute("exception", HttpStatus.UNAUTHORIZED.value());
+            request.setAttribute("exception", CustomStatusCode.USER_NOT_FOUND);
         }
         // 다음 필터로 넘어간다.
         filterChain.doFilter(request, response);

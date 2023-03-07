@@ -30,13 +30,13 @@ public class PostController {
 
     // 게시글 전체 조회
     @GetMapping("/posts")
-    public ResponseEntity<GlobalResponseDto> getReviews() {
+    public ResponseEntity<GlobalResponseDto> getPosts() {
         return postService.getPosts();
     }
 
     // 게시글 상세 조회
     @GetMapping("/posts/{id}")
-    public ResponseEntity<GlobalResponseDto> getReview(@PathVariable Long id){
+    public ResponseEntity<GlobalResponseDto> getPost(@PathVariable Long id){
         return postService.getPost(id);
     }
 
@@ -50,8 +50,8 @@ public class PostController {
 
     // 게시글 삭제
     @DeleteMapping("/posts/{id}")
-    public ResponseEntity<GlobalResponseDto> deleteReview(@PathVariable Long id,
-                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<GlobalResponseDto> deletePost(@PathVariable Long id,
+                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return postService.deletePost(id, userDetails.getUser());
     }
 

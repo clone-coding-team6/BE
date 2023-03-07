@@ -1,7 +1,6 @@
 package com.sparta.instagramclonebe.domain.comment.controller;
 
 import com.sparta.instagramclonebe.domain.comment.dto.CommentRequestDto;
-import com.sparta.instagramclonebe.domain.comment.dto.CommentResponseDto;
 import com.sparta.instagramclonebe.domain.comment.service.CommentService;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
 import com.sparta.instagramclonebe.global.security.UserDetailsImpl;
@@ -19,7 +18,7 @@ public class CommentController {
 
     // 댓글 작성
     @PostMapping("/comment")
-    public ResponseEntity<GlobalResponseDto<CommentResponseDto>> createComment(@RequestParam(value = "postId") Long postId,
+    public ResponseEntity<GlobalResponseDto> createComment(@RequestParam(value = "postId") Long postId,
                                                                                @RequestBody CommentRequestDto commentRequestDto,
                                                                                @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.createComment(postId, commentRequestDto, userDetails.getUser());
@@ -27,7 +26,7 @@ public class CommentController {
 
     // 댓글 삭제
     @DeleteMapping("/comment/{id}")
-    public ResponseEntity<GlobalResponseDto<Void>> deleteComment(@PathVariable Long id,
+    public ResponseEntity<GlobalResponseDto> deleteComment(@PathVariable Long id,
                                                                  @AuthenticationPrincipal UserDetailsImpl userDetails){
         return commentService.deleteComment(id, userDetails.getUser());
     }

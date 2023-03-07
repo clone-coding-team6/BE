@@ -3,6 +3,7 @@ package com.sparta.instagramclonebe.global.config;
 
 import com.sparta.instagramclonebe.global.jwt.JwtAuthFilter;
 import com.sparta.instagramclonebe.global.jwt.JwtUtil;
+import com.sparta.instagramclonebe.global.security.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -75,6 +76,7 @@ public class WebSecurityConfig {
                 .antMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
                 .anyRequest().authenticated()
+                .and().exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .and().addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

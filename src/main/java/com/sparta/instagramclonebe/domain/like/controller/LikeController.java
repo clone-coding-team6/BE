@@ -20,14 +20,14 @@ public class LikeController {
 
     // 게시글 좋아요
     @PostMapping("/posts/likes/{id}")
-    public ResponseEntity<GlobalResponseDto<String>> createPostLike(@PathVariable Long id,
+    public ResponseEntity<GlobalResponseDto> createPostLike(@PathVariable Long id,
                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return likeService.createPostLike(id, userDetails.getUser());
     }
 
     // 댓글 좋아요
     @PostMapping("/comment/likes/{id}")
-    public ResponseEntity<GlobalResponseDto<String>> createCommentsLike(@PathVariable Long id,
+    public ResponseEntity<GlobalResponseDto> createCommentsLike(@PathVariable Long id,
                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return likeService.createCommentsLike(id, userDetails.getUser());
     }

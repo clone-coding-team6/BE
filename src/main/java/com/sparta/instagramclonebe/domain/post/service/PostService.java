@@ -14,12 +14,10 @@ import com.sparta.instagramclonebe.domain.post.entity.Post;
 import com.sparta.instagramclonebe.domain.post.repository.PostRepository;
 import com.sparta.instagramclonebe.domain.user.entity.User;
 import com.sparta.instagramclonebe.global.dto.GlobalResponseDto;
-import com.sparta.instagramclonebe.global.excpetion.ErrorCode;
-import com.sparta.instagramclonebe.global.excpetion.exceptionType.PostException;
-import com.sparta.instagramclonebe.global.util.ResponseUtils;
+import com.sparta.instagramclonebe.global.response.CustomStatusCode;
+import com.sparta.instagramclonebe.global.response.exceptionType.PostException;
 import com.sparta.instagramclonebe.global.util.s3.S3Service;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,66 +39,67 @@ public class PostService {
 
     // 게시글 작성
     @Transactional
-    public ResponseEntity<GlobalResponseDto<PostResponseDto>> createPost(PostRequestDto postRequestDto, User user, List<MultipartFile> multipartFilelist) throws IOException {
+    public ResponseEntity<GlobalResponseDto> createPost(PostRequestDto postRequestDto, User user, List<MultipartFile> multipartFilelist) throws IOException {
 
         Post post = postRepository.saveAndFlush(Post.of(postRequestDto, user));
 
         if (multipartFilelist != null) {
             s3Service.upload(multipartFilelist, "static", post, user);
         }
-        return ResponseEntity.ok()
-                .body(ResponseUtils.ok(PostResponseDto.of(post)));
-
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_UPLOAD_SUCCESS,PostResponseDto.of(post)));
     }
 
     // 전체 게시글 조회
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto<List<PostResponseDto>>> getPosts() {
+    public ResponseEntity<GlobalResponseDto> getPosts() {
 
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
         for (Post post : postList) {
             List<String> imagePathList = ImagePathList(post);
             List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
-            responseDtoList.add(PostResponseDto.of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList));
+            responseDtoList.add(PostResponseDto
+                    .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList));
         }
-        return new ResponseEntity<>(ResponseUtils.ok(responseDtoList), HttpStatus.OK);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_TOTAL_LOAD_SUCCESS, responseDtoList));
     }
 
     // 게시글 상세 조회
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto<PostResponseDto>> getPost(Long id) {
+    public ResponseEntity<GlobalResponseDto> getPost(Long id) {
 
         Post post = getPostById(id);
         List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList)), HttpStatus.OK);
+        PostResponseDto postResponseDto = PostResponseDto
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_LOAD_SUCCESS, postResponseDto));
     }
 
     // 게시글 수정
     @Transactional
-    public ResponseEntity<GlobalResponseDto<PostResponseDto>> update(Long id, PostRequestDto requestDto, User user) {
+    public ResponseEntity<GlobalResponseDto> update(Long id, PostRequestDto requestDto, User user) {
 
         Post post = getPostById(id);
         if (!post.getUser().equals(user)) {
-            throw new PostException(ErrorCode.POST_UPDATE_FAILED);
+            throw new PostException(CustomStatusCode.POST_UPDATE_FAILED);
         }
         post.update(requestDto);
         postRepository.flush();
         List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
-        return new ResponseEntity<>(ResponseUtils.ok(PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList)), HttpStatus.OK);
+        PostResponseDto postResponseDto = PostResponseDto
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_UPDATE_SUCCESS, postResponseDto));
     }
 
     // 게시글 삭제
     @Transactional
-    public ResponseEntity<GlobalResponseDto<Void>> deletePost(Long id, User user) {
+    public ResponseEntity<GlobalResponseDto> deletePost(Long id, User user) {
 
         Post post = getPostById(id);
         if (!post.getUser().equals(user)) {
-            throw new PostException(ErrorCode.POST_DELETE_FAILED);
+            throw new PostException(CustomStatusCode.POST_DELETE_FAILED);
         }
 
         List<Comment> commentList = commentRepository.findAllByPostId(post.getId());
@@ -118,7 +117,7 @@ public class PostService {
         postLikeRepository.deleteAllByPostId(post.getId());
         commentRepository.deleteAllByPostId(post.getId());
         postRepository.deleteById(post.getId());
-        return new ResponseEntity<>(ResponseUtils.ok(null), HttpStatus.OK);
+        return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_DELETE_SUCCESS));
     }
 
     /* ========================================= METHOD =========================================*/
@@ -148,7 +147,7 @@ public class PostService {
     private Post getPostById(Long id) {
 
         return postRepository.findById(id).orElseThrow(
-                () -> new PostException(ErrorCode.POST_NOT_FOUND)
+                () -> new PostException(CustomStatusCode.POST_NOT_FOUND)
         );
     }
 

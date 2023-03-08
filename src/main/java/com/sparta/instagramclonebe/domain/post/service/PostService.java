@@ -6,6 +6,7 @@ import com.sparta.instagramclonebe.domain.comment.entity.Comment;
 import com.sparta.instagramclonebe.domain.comment.repository.CommentRepository;
 import com.sparta.instagramclonebe.domain.image.entity.Image;
 import com.sparta.instagramclonebe.domain.image.repository.ImageRepository;
+import com.sparta.instagramclonebe.domain.like.entity.PostLike;
 import com.sparta.instagramclonebe.domain.like.repository.CommentLikeRepository;
 import com.sparta.instagramclonebe.domain.like.repository.PostLikeRepository;
 import com.sparta.instagramclonebe.domain.post.dto.PostRequestDto;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,45 +53,48 @@ public class PostService {
 
     // 전체 게시글 조회
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto> getPosts() {
-
+    public ResponseEntity<GlobalResponseDto> getPosts(User user) {
         List<Post> postList = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> responseDtoList = new ArrayList<>();
         for (Post post : postList) {
             List<String> imagePathList = ImagePathList(post);
             List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+            List<PostLike> postLikeList = postLikeRepository.findAllByPostId(post.getId());
+            boolean likeOrNot = isUserLikePost(postLikeList, user);
             responseDtoList.add(PostResponseDto
-                    .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList));
+                    .of(post, (long) postLikeList.size(), imagePathList, commentResponseDtoList, likeOrNot));
         }
+
         return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_TOTAL_LOAD_SUCCESS, responseDtoList));
     }
 
     // 게시글 상세 조회
     @Transactional(readOnly = true)
-    public ResponseEntity<GlobalResponseDto> getPost(Long id) {
-
+    public ResponseEntity<GlobalResponseDto> getPost(Long id, User user) {
         Post post = getPostById(id);
         List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+        List<PostLike> postLikeList = postLikeRepository.findAllByPostId(post.getId());
+        boolean likeOrNot = isUserLikePost(postLikeList, user);
         PostResponseDto postResponseDto = PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList,likeOrNot);
         return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_LOAD_SUCCESS, postResponseDto));
     }
 
     // 게시글 수정
     @Transactional
     public ResponseEntity<GlobalResponseDto> update(Long id, PostRequestDto requestDto, User user) {
-
         Post post = getPostById(id);
         if (!post.getUser().equals(user)) {
             throw new PostException(CustomStatusCode.POST_UPDATE_FAILED);
         }
         post.update(requestDto);
-        postRepository.flush();
         List<String> imagePathList = ImagePathList(post);
         List<CommentResponseDto> commentResponseDtoList = getCommentResponseDtoList(post);
+        List<PostLike> postLikeList = postLikeRepository.findAllByPostId(post.getId());
+        boolean likeOrNot = isUserLikePost(postLikeList, user);
         PostResponseDto postResponseDto = PostResponseDto
-                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList);
+                .of(post, postLikeRepository.countPostLikeByPostId(post.getId()), imagePathList, commentResponseDtoList, likeOrNot);
         return ResponseEntity.ok(GlobalResponseDto.of(CustomStatusCode.POST_UPDATE_SUCCESS, postResponseDto));
     }
 
@@ -142,6 +147,16 @@ public class PostService {
             imagePathList.add(image.getUploadPath());
         }
         return imagePathList;
+    }
+
+    private boolean isUserLikePost(List<PostLike> postLikeList, User user) {
+        Optional<PostLike> found = postLikeList.stream()
+                .filter((postLike) -> postLike.getUser().equals(user))
+                .findFirst();
+        if(found.isPresent()){
+            return true;
+        }
+        return false;
     }
 
     private Post getPostById(Long id) {

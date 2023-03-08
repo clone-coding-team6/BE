@@ -30,14 +30,14 @@ public class PostController {
 
     // 게시글 전체 조회
     @GetMapping("/posts")
-    public ResponseEntity<GlobalResponseDto> getPosts() {
-        return postService.getPosts();
+    public ResponseEntity<GlobalResponseDto> getPosts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return postService.getPosts(userDetails.getUser());
     }
 
     // 게시글 상세 조회
     @GetMapping("/posts/{id}")
-    public ResponseEntity<GlobalResponseDto> getPost(@PathVariable Long id){
-        return postService.getPost(id);
+    public ResponseEntity<GlobalResponseDto> getPost(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return postService.getPost(id, userDetails.getUser());
     }
 
     // 게시글 수정
